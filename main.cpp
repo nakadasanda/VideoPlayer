@@ -10,6 +10,8 @@ extern "C"
 
 using namespace std;
 
+/// SaveFrame関数
+/// RGB情報を1つの画像ファイルに保存します。
 void SaveFrame(AVFrame *pFrame, int width, int height,int index)
 {
     FILE *pFile;
@@ -53,12 +55,12 @@ int main()
     int ret, got_picture;
 
 
-    av_register_all();
+    av_register_all();  //FFMPEGは、これを使用してアプリケーションを初期化します。
     cout << "Hello FFmpeg!" << endl;
     unsigned version = avcodec_version();
     cout << "version is:" << version << endl;
 
-
+    //AVFormatContextを割り当てます.
     pFormatCtx = avformat_alloc_context();
 
     if(avformat_open_input(&pFormatCtx,file_path,NULL,NULL) != 0)
@@ -79,6 +81,9 @@ int main()
 
     videoStream = -1;
 
+    //ビデオのストリームを見つかるまで探索します。
+    //videoStreamに保存されます
+    //ここでは、ビデオストリームだけを扱います.
     for(i=0;i < pFormatCtx->nb_streams;i++)
     {
         if(pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
@@ -87,6 +92,7 @@ int main()
         }
     }
 
+    //videoストリームが-1の場合ビデオストリームが見つかりませんでした。
     if(videoStream == -1)
     {
         cout << "Don't find stream " << endl;
@@ -95,9 +101,11 @@ int main()
 
     cout << "find stream " << endl;
 
+    //デコーダーを見つける
     pCodecCtx = pFormatCtx->streams[videoStream]->codec;
     pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 
+    //デコーダーを開く
     if(pCodec == NULL)
     {
         cout << "not find codec " << endl;
@@ -125,17 +133,17 @@ int main()
 
     int y_size = pCodecCtx->width * pCodecCtx->height;
 
-    packt = (AVPacket *) malloc(sizeof(AVPacket));
-    av_new_packet(packt,y_size);
+    packt = (AVPacket *) malloc(sizeof(AVPacket)); //パケット割り当て
+    av_new_packet(packt,y_size);    //パケットデータ割り当て
 
-    av_dump_format(pFormatCtx,0,file_path,0);
+    av_dump_format(pFormatCtx,0,file_path,0);   //ビデオ情報を出力する
 
     int index = 0;
 
     while (1) {
         if(av_read_frame(pFormatCtx,packt) < 0)
         {
-            break;
+            break; //ビデオが読み込まれます。
         }
 
         if(packt -> stream_index == videoStream)
@@ -153,7 +161,7 @@ int main()
                           pFrame->linesize,0,pCodecCtx->height,pFrameRGB->data,
                           pFrameRGB->linesize);
                 SaveFrame(pFrameRGB,pCodecCtx->width,pCodecCtx->height,index++);
-                if(index > 1000) return 0;
+                if(index > 1000) return 0; //1000枚の画像を保存します。
             }
         }
         av_free_packet(packt);
