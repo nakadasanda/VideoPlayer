@@ -22,6 +22,7 @@ VideoPlayer::~VideoPlayer()
 
 void VideoPlayer::startPlay()
 {
+    //QThreadのStart関数を呼び出すと、次のrun関すが実行されます。run関数は新しいスレッドです。
     this->start();
 }
 
@@ -43,12 +44,12 @@ void VideoPlayer::run()
     int ret, got_picture;
 
 
-    av_register_all();
+    av_register_all(); //FFMPEGは、これを使用してアプリケーションを初期化します。
     cout << "Hello FFmpeg!" << endl;
     unsigned version = avcodec_version();
     cout << "version is:" << version << endl;
 
-
+    //AVFormatContextを割り当てます.
     pFormatCtx = avformat_alloc_context();
 
     if(avformat_open_input(&pFormatCtx,file_path,NULL,NULL) != 0)
@@ -69,6 +70,9 @@ void VideoPlayer::run()
 
     videoStream = -1;
 
+    //ビデオのストリームを見つかるまで探索します。
+    //videoStreamに保存されます
+    //ここでは、ビデオストリームだけを扱います.
     for(i=0;i < pFormatCtx->nb_streams;i++)
     {
         if(pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
@@ -85,6 +89,7 @@ void VideoPlayer::run()
 
     cout << "find stream " << endl;
 
+    //デコーダーを見つける
     pCodecCtx = pFormatCtx->streams[videoStream]->codec;
     pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
 
@@ -95,6 +100,7 @@ void VideoPlayer::run()
 
     cout << "codec find " << endl;
 
+    //デコーダーを開く
     if(avcodec_open2(pCodecCtx,pCodec,NULL)<0)
     {
         cout << "not open codec " << endl;
@@ -104,6 +110,7 @@ void VideoPlayer::run()
     pFrame = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
 
+    //デコードされたYUVデータをRGB32に変換するように変更
     img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height,
                                      pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height,
                                      AV_PIX_FMT_RGB32, SWS_BICUBIC, NULL, NULL, NULL);
@@ -115,10 +122,10 @@ void VideoPlayer::run()
 
     int y_size = pCodecCtx->width * pCodecCtx->height;
 
-    packt = (AVPacket *) malloc(sizeof(AVPacket));
-    av_new_packet(packt,y_size);
+    packt = (AVPacket *) malloc(sizeof(AVPacket)); //パケット割り当て
+    av_new_packet(packt,y_size); //パケットデータ割り当
 
-    av_dump_format(pFormatCtx,0,file_path,0);
+    av_dump_format(pFormatCtx,0,file_path,0);//ビデオ情報を出力する
 
     int index = 0;
 
@@ -144,11 +151,11 @@ void VideoPlayer::run()
                           pFrameRGB->linesize);
 
                 QImage tempImg = QImage((uchar *)out_buffer,pCodecCtx->width,pCodecCtx->height,QImage::Format_RGB32);
-                QImage image = tempImg.copy();
-                emit sig_GetOneFrame(image);
+                QImage image = tempImg.copy(); //画像がディスプレイに渡されます
+                emit sig_GetOneFrame(image); //送信信号
             }
         }
-        usleep(2000);
+        msleep(3); //早く再生されてしまう。
         av_free_packet(packt);
     }
     av_free(out_buffer);
