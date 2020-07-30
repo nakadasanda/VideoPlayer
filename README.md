@@ -1,7 +1,6 @@
 "# VideoPlayer" 
-
-<div style="width:100%;height:0px;position:relative;padding-bottom:56.250%;"><iframe src="https://streamable.com/e/3kv6p9" frameborder="0" width="100%" height="100%" allowfullscreen style="width:100%;height:100%;position:absolute;left:0px;top:0px;overflow:hidden;"></iframe></div>
-
+  
+  
 windows向けビデオプレイヤー(映像のみ)  
 
 これはQtプロジェクトです。  
