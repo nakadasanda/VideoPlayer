@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     mPlayer = new VideoPlayer();
     connect(mPlayer,SIGNAL(sig_GetOneFrame(QImage)),this,SLOT(slotGetOneFrame(QImage)));
 
-    mPlayer->setFileName("D:\\キュンキュンマックス.mp4");
+    mPlayer->setFileName("/home/nakadasanda/Videos/Pokemon.mp4");
     mPlayer-> startPlay();
 }
 

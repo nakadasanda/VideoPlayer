@@ -29,18 +29,11 @@ HEADERS += \
 FORMS += \
     src/mainwindow.ui
 
-INCLUDEPATH += $$PWD/ffmpeg/include \
-            += $$PWD/src \
+INCLUDEPATH += $$PWD/src \
+            += -I/usr/local/include/SDL2 -D_REENTRANT \
 
-LIBS += $$PWD/ffmpeg/lib/avcodec.lib \
-        $$PWD/ffmpeg/lib/avdevice.lib \
-        $$PWD/ffmpeg/lib/avfilter.lib \
-        $$PWD/ffmpeg/lib/avformat.lib \
-        $$PWD/ffmpeg/lib/avutil.lib \
-        $$PWD/ffmpeg/lib/postproc.lib \
-        $$PWD/ffmpeg/lib/swresample.lib \
-        $$PWD/ffmpeg/lib/swscale.lib \
-
+LIBS +=  -Lffmpeg -lavdevice -lavformat -lavfilter -lavcodec -lswscale -lavutil -lswresample \
+     += -L/usr/local/lib -Wl,-rpath,/usr/local/lib -Wl,--enable-new-dtags -lSDL2 \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
